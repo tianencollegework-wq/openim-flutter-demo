@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
 
 env:
-  FLUTTER_VERSION: 3.26.0
+  FLUTTER_TAG: 3.26.0-stable
   JAVA_VERSION: 17
 
 jobs:
@@ -22,15 +22,13 @@ jobs:
       - name: 配置Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          channel: stable
+          flutter-version: ${{ env.FLUTTER_TAG }}
           cache: true
 
-      # 关闭Flutter统计上报，精简日志
       - name: 关闭Flutter Analytics
         run: flutter config --no-analytics
 
-      - name: 安装依赖
+      - name: 清理+安装依赖
         run: |
           flutter clean
           flutter pub get
