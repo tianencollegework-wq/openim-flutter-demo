@@ -1,17 +1,16 @@
 name: 一键构建Debug APK
-# 仅保留手动触发，删除自动push监听、删除分支选择输入
 on:
   workflow_dispatch:
 
 env:
-  FLUTTER_VERSION: 3.24.5
+  FLUTTER_VERSION: 3.26.0
   JAVA_VERSION: 17
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: 拉取当前仓库代码
+      - name: 拉取代码
         uses: actions/checkout@v4
 
       - name: 配置JDK17
@@ -20,14 +19,18 @@ jobs:
           distribution: temurin
           java-version: ${{ env.JAVA_VERSION }}
 
-      - name: 配置指定版本Flutter
+      - name: 配置Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
           cache: true
 
-      - name: 清理并安装依赖
+      # 关闭Flutter统计上报，精简日志
+      - name: 关闭Flutter Analytics
+        run: flutter config --no-analytics
+
+      - name: 安装依赖
         run: |
           flutter clean
           flutter pub get
@@ -35,9 +38,12 @@ jobs:
       - name: 编译Debug APK
         run: flutter build apk --debug
 
-      - name: 上传APK产物
+      - name: 提取APK
+        run: mkdir output && cp build/app/outputs/flutter-apk/app-debug.apk output/
+
+      - name: 上传产物
         uses: actions/upload-artifact@v4
         with:
-          name: debug-apk
-          path: build/app/outputs/flutter-apk/app-debug.apk
+          name: debug-apk-file
+          path: output/
           retention-days: 30
